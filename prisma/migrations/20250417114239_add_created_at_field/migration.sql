@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Learning" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "image" TEXT,
+ADD COLUMN     "revisedAt" TIMESTAMP(3);

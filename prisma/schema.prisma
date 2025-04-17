@@ -1,0 +1,40 @@
+// prisma/schema.prisma
+
+// This block tells Prisma how to connect to your database
+datasource db {
+  provider = "postgresql"   // The provider is PostgreSQL
+  url      = env("DATABASE_URL")  // This gets the database URL from the .env file
+}
+
+model Learning {
+  id        String       @id @default(uuid())
+  title     String
+  content   String
+  source    Source
+  type     LearningType
+  isImportant Boolean
+  createdAt DateTime  @default(now())
+  revisedAt DateTime?
+  image     String?
+}
+
+
+
+enum Source {
+  Book
+  YouTube
+  Podcast
+  SelfHelp
+  EE
+  ML
+  Blockchain
+  Cloud
+}
+
+enum LearningType {
+  text
+  link
+  pdf
+  image
+}
+
