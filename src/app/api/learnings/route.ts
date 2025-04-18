@@ -1,95 +1,57 @@
-import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { Source, LearningType } from "@prisma/client";
-import fs from "fs";
+// app/api/learnings/route.ts
+import { NextRequest } from "next/server";
+import fs from "fs/promises";
 import path from "path";
+import { prisma } from "@/lib/prisma";
+import { Source, LearningType } from "@prisma/client";
 
-// Disable body parsing to handle FormData manually
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export async function POST(req: NextRequest) {
+  const formData = await req.formData();
 
-export async function POST(req: Request) {
-  try {
-    const formData = await parseFormData(req);
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  const source = formData.get("source") as Source;
+  const typek = formData.get("typek") as LearningType;
+  const isImportant = formData.get("isImportant") === "true";
+  const file = formData.get("image") as File;
 
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    const source = formData.get("source") as Source;
-    const typek = formData.get("typek") as LearningType;
-    const isImportant = formData.get("isImportant") === "true";
-    const imageFile = formData.get("image") as File | null; // Using `imageFile` to avoid name collision
-    // console.log("imageFile:", imageFile);
-    
-    // Basic validation
-    if (!title || !content || !source || !typek) {
-      return new NextResponse(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
-    }
-
-
-let imageUrl: string = ""; // Initialize imageUrl to an empty string
-// Handle image upload
-if (imageFile && imageFile instanceof File) {
-  console.log("Processing image file:", imageFile.name);
-  const buffer = Buffer.from(await imageFile.arrayBuffer());
-  const fileName = `${Date.now()}-${imageFile.name}`;
-  const imagePath = path.join(process.cwd(), "public", "uploads", fileName);
-
-  if (!fs.existsSync(path.dirname(imagePath))) {
-    fs.mkdirSync(path.dirname(imagePath), { recursive: true });
+  if (!title || !content || !source || !typek) {
+    return new Response(JSON.stringify({ error: "Missing required fields" }), {
+      status: 400,
+    });
   }
 
-  fs.writeFileSync(imagePath, buffer);
+  let imageUrl = "";
+  if (file) {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const fileName = `${Date.now()}-${file.name}`;
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const filePath = path.join(uploadDir, fileName);
 
-  imageUrl = `/uploads/${fileName}`;
-  console.log("Image saved to:", imageUrl);
-}
+    await fs.mkdir(uploadDir, { recursive: true });
+    await fs.writeFile(filePath, buffer);
 
+    imageUrl = `/uploads/${fileName}`;
+  }
 
-    // Create the record in the database
-    const newLearning = await prisma.learning.create({
+  try {
+    const learning = await prisma.learning.create({
       data: {
         title,
         content,
         source,
         type: typek,
         isImportant,
-        image: imageUrl,  // Store the image URL or path in the database
+        image: imageUrl,
       },
     });
 
-    console.log("New learning created:", newLearning);
-    return new NextResponse(JSON.stringify(newLearning), { status: 200 });
-
-  } catch (error) {
-    console.error("Error creating learning:", error);
-    return new NextResponse(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify(learning), { status: 200 });
+  } catch (err) {
+    console.error("Prisma error:", err);
+    return new Response(JSON.stringify({ error: "Database error" }), {
+      status: 500,
+    });
   }
-}
-
-// Utility: Parse raw form data
-async function parseFormData(req: Request): Promise<FormData> {
-  return new Promise<FormData>((resolve, reject) => {
-    const formData = new FormData();
-
-    req.text().then((body) => {
-      const boundary = body.split("\r\n")[0];
-      const parts = body.split(boundary).slice(1, -1);
-
-      parts.forEach((part) => {
-        const match = part.match(/Content-Disposition: form-data; name="([^"]+)"/);
-        if (match) {
-          const key = match[1];
-          const value = part.split("\r\n\r\n")[1]?.split("\r\n--")[0];
-          if (value) {
-            formData.append(key, value.trim());
-          }
-        }
-      });
-
-      resolve(formData);
-    }).catch(reject);
-  });
 }

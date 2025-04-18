@@ -9,58 +9,73 @@ export default function AddLearningPage() {
   const [typek, setType] = useState("text");
   const [isImportant, setIsImportant] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    if (!file) {
+      setImagePreview(null);
+      return;
     }
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    // debugging
+    console.log("Form submitted with values:", {
+      title,
+      content,
+      source,
+      typek,
+      isImportant,
+      imageFile,
+    });
+    // Basic validation
+    if (!title || !content || !source || !typek) {
+      alert("Please fill in all required fields.");
+      setLoading(false);
+      return;
+    }
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
-    formData.append("source", source); // Enum value
-    formData.append("typek", typek);   // Enum value
-    formData.append("isImportant", isImportant.toString());
-    if (image) {
-      formData.append("image", image);
-    }
-
-    // Log FormData to check its content
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
+    formData.append("source", source);
+    formData.append("typek", typek);
+    formData.append("isImportant", String(isImportant));
+    
+    if (imageFile) {
+      formData.append("image", imageFile);
+      // debugging
+      console.log("Image file added to FormData:", imageFile.name);
+      console.log("Image file size:", imageFile.size);
+      console.log("Image file type:", imageFile.type);
     }
 
     try {
       const res = await fetch("/api/learnings", {
         method: "POST",
-        body: formData,
+        body: formData, // Send FormData directly
       });
 
-      if (res.ok) {
-        alert("✅ Learning saved!");
-        setTitle("");
-        setContent("");
-        setIsImportant(false);
-        setImage(null);
-        setImagePreview(null);
-      } else {
-        alert("❌ Error saving learning.");
-      }
+      if (!res.ok) throw new Error("Failed to save");
+      alert("Learning saved!");
+      // reset form
+      setTitle("");
+      setContent("");
+      setSource("Book");
+      setType("text");
+      setIsImportant(false);
+      setImageFile(null);
+      setImagePreview(null);
     } catch (err) {
-      alert("❌ Network error.");
+      console.error(err);
+      alert("There was an error saving your learning.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +87,7 @@ export default function AddLearningPage() {
         <h1 className="text-2xl font-semibold mb-6 text-gray-800">📚 Add a New Learning</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
@@ -84,6 +100,7 @@ export default function AddLearningPage() {
             />
           </div>
 
+          {/* Content */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
             <textarea
@@ -112,6 +129,7 @@ export default function AddLearningPage() {
             )}
           </div>
 
+          {/* Source and Type */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
@@ -146,6 +164,7 @@ export default function AddLearningPage() {
             </div>
           </div>
 
+          {/* Important */}
           <div className="flex items-center">
             <input
               id="important"
