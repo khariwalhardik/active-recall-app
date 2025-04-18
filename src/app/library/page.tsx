@@ -16,6 +16,9 @@ const availableSources = ["Book", "YouTube", "Podcast", "SelfHelp", "EE", "ML", 
 const availableTypes = ["text", "link", "pdf", "image"];
 
 export default function LibraryPage() {
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const [learnings, setLearnings] = useState<Learning[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -216,11 +219,61 @@ export default function LibraryPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(learning.id)} // Call handleDelete on click
-                          className="text-sm text-red-600 font-medium bg-red-200 hover:bg-red-300 px-3 py-1 rounded-md"
-                        >
-                          Delete
-                        </button>
+  onClick={() => {
+    setDeleteId(learning.id);
+    setShowDeleteModal(true);
+  }}
+  className="text-sm text-red-600 font-medium bg-red-200 hover:bg-red-300 px-3 py-1 rounded-md"
+>
+  Delete
+</button>
+{showDeleteModal && deleteId !== null && (
+  <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-center">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+      <p className="text-gray-600 mb-6">Are you sure you want to delete this learning item?</p>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={async () => {
+            try {
+              const response = await fetch(`/api/library/${deleteId}`, {
+                method: 'DELETE',
+              });
+
+              if (response.ok) {
+                setLearnings((prev) =>
+                  prev.filter((learning) => learning.id !== deleteId)
+                );
+                alert("Deleted successfully");
+              } else {
+                alert("Failed to delete learning");
+              }
+            } catch (error) {
+              console.error("Error deleting learning:", error);
+              alert("Error deleting learning");
+            } finally {
+              setShowDeleteModal(false);
+              setDeleteId(null);
+            }
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
+        >
+          Delete
+        </button>
+        <button
+          onClick={() => {
+            setShowDeleteModal(false);
+            setDeleteId(null);
+          }}
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
                       </div>
                     </div>
                   </div>
