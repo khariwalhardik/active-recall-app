@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"; // Adjust if needed based on your prisma instance setup
 
-// Handle GET request to fetch all learnings
-export async function GET(req: NextRequest) {
+
+export async function GET() {
   try {
     // Fetch all learning records from the database
     const learnings = await prisma.learning.findMany({

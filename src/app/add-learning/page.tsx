@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar"; // Adjusted path to locate Navbar component
+import { useLearningState } from "../context/LearningContext"; // Adjusted path to locate LearningContext
+import { useRouter } from "next/navigation";
 export default function AddLearningPage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [source, setSource] = useState("Book");
@@ -12,7 +15,9 @@ export default function AddLearningPage() {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-
+  // const [isnewlearningadded, setIsNewLearningAdded] = useState(false);
+  const { isNewLearningAdded, setIsNewLearningAdded } = useLearningState()!;
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
@@ -80,6 +85,9 @@ export default function AddLearningPage() {
     } finally {
       setLoading(false);
     }
+    setIsNewLearningAdded(!isNewLearningAdded); // Toggle the state to trigger re-fetch in the library page
+    console.log("isNewLearningAdded state updated:", !isNewLearningAdded);
+    router.push("/home"); // Redirect to the library page after saving
   };
 
   return (

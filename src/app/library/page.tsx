@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Navbar from "../components/Navbar"; // Adjusted path to locate Navbar component
+import { useLearningState } from "../context/LearningContext"; // Ensure you have a context provider for shared state
+//wanted to import the state from the add learning page to the library page but it was not working so I just created a new state here and used it in the library page
+
+
 interface Learning {
   id: number;
   title: string;
@@ -19,7 +23,6 @@ const availableTypes = ["text", "link", "pdf", "image"];
 export default function LibraryPage() {
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 const [deleteId, setDeleteId] = useState<number | null>(null);
-
   const [learnings, setLearnings] = useState<Learning[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -28,10 +31,9 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("All");
 
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedLearning, setSelectedLearning] = useState<Learning | null>(null);
 
   const [editedLearning, setEditedLearning] = useState<Learning | null>(null);
-
+  const { isNewLearningAdded } = useLearningState()!;
   useEffect(() => {
     async function fetchLearnings() {
       setLoading(true);
@@ -48,7 +50,10 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
     }
 
     fetchLearnings();
-  }, []);
+    console.log(isNewLearningAdded, "isNewLearningAdded from library page");
+  }, [isNewLearningAdded]);
+
+
 
   useEffect(() => {
     let filtered = learnings.filter((learning) => 
@@ -71,32 +76,11 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm("Are you sure you want to delete this learning item?");
-    if (confirmed) {
-      try {
-        const response = await fetch(`/api/library/${id}`, {
-          method: 'DELETE',
-        });
-  
-        if (response.ok) {
-          // Handle the successful deletion
-          setLearnings((prevLearnings) => prevLearnings.filter((learning) => learning.id !== id));
-          alert("Deleted successfully");
-        } else {
-          alert("Failed to delete learning");
-        }
-      } catch (error) {
-        console.error("Error deleting learning:", error);
-        alert("Error deleting learning");
-      }
-    }
-  };
   
   const handleSave = async () => {
     if (editedLearning) {
       try {
-        const response = await fetch(`/api/library/${editedLearning.id}`, {
+        const response = await fetch(`/api/library/${editedLearning.id}/edit`, {
           method: "PUT", // Or PATCH, depending on your backend
           headers: {
             "Content-Type": "application/json",
@@ -181,21 +165,25 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6">
             {filteredLearnings.length > 0 ? (
               filteredLearnings.map((learning) => {
+        
                 const imageUrl =
                   learning.image?.trim() !== ""
                     ? learning.image
                     : "https://placehold.co/400x200/EEE/31343C/"; // Default placeholder image
-
+                    console.log(imageUrl, "imageUrl from library page");
                 return (
                   <div
                     key={learning.id}
                     className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200 flex flex-col"
                     style={{ minHeight: "400px" }}
                   >
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={learning.title}
-                      className="h-60 object-cover"
+                      width={400}
+                      height={200}
+                      className="w-full h-48 object-cover rounded-t-2xl"
+                      style={{ minHeight: "200px" }}
                     />
                     <div className="flex flex-col flex-grow p-4">
                       <h2 className="font-semibold text-lg text-gray-800 mb-2 truncate">
@@ -240,7 +228,7 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
         <button
           onClick={async () => {
             try {
-              const response = await fetch(`/api/library/${deleteId}`, {
+              const response = await fetch(`/api/library/${deleteId}/delete`, {
                 method: 'DELETE',
               });
 

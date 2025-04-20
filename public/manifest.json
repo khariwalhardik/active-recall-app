@@ -1,0 +1,17 @@
+{
+    "name": "Active Recall App",
+    "short_name": "RecallApp",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4f46e5",
+    "description": "Review and retain your learnings with active recall!",
+    "icons": [
+      {
+        "src": "/icons/icon-512x512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }
+  

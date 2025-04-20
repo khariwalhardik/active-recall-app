@@ -71,6 +71,85 @@ npx prisma migrate reset
 
 
 
+1. Install next-pwa
+Run this in your terminal:
+
+bash
+Copy
+Edit
+npm install next-pwa
+2. Update next.config.js
+If you're using the App Router, do this:
+
+js
+Copy
+Edit
+// next.config.js
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
+
+const nextConfig = {
+  // your existing Next.js config
+};
+
+module.exports = withPWA(nextConfig);
+3. Create public/manifest.json
+This file describes your app when it's "installed":
+
+json
+Copy
+Edit
+{
+  "name": "Active Recall App",
+  "short_name": "Recall",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "description": "A minimal active recall app with spaced repetition.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+You can generate icons here: https://realfavicongenerator.net/
+
+Put your icons in: public/icons/
+5. Build Your App
+bash
+Copy
+Edit
+npm run build
+This will generate a service-worker.js in public/.
+
+6. Test PWA Features
+Run the production build:
+
+bash
+Copy
+Edit
+npm start
+Open your app in Chrome
+
+Open DevTools → Application → Manifest / Service Worker
+
+You should see:
+
+"Install" icon in browser address bar
+
+Offline functionality (try turning off Wi-Fi!)
 
 
 

@@ -27,6 +27,9 @@ export default function HomePage() {
         const response = await fetch("/api/library");
         const data = await response.json();
         setLearnings(data);
+        // Select a random learning entry
+        learnings.sort(() => Math.random() - 0.5); // Shuffle the array
+        // Select a random learning entry from the shuffled array
         if (data.length > 0) {
           const random = data[Math.floor(Math.random() * data.length)];
           setRandomLearning(random);
