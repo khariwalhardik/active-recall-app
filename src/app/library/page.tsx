@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar"; // Adjusted path to locate Navbar component
 interface Learning {
   id: number;
   title: string;
@@ -131,45 +132,48 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
   };
 
   return (
+        <>
+          <Navbar /> {/* ✅ Add the navbar here */}
     <main className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-6xl mx-auto p-6">
         <h1 className="text-2xl font-semibold mb-6 text-gray-800">📚 My Learning Library</h1>
 
-        <div className="mb-4 flex gap-4">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title..."
-            className="w-full px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
-          />
+        <div className="mb-4 flex flex-col sm:flex-row gap-4 w-full">
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Search by title..."
+    className="w-full px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
+  />
 
-          <select
-            value={sourceFilter}
-            onChange={(e) => setSourceFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="All">All Sources</option>
-            {availableSources.map((source) => (
-              <option key={source} value={source}>
-                {source}
-              </option>
-            ))}
-          </select>
+  <select
+    value={sourceFilter}
+    onChange={(e) => setSourceFilter(e.target.value)}
+    className="w-full sm:w-auto px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
+  >
+    <option value="All">All Sources</option>
+    {availableSources.map((source) => (
+      <option key={source} value={source}>
+        {source}
+      </option>
+    ))}
+  </select>
 
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
-          >
-            <option value="All">All Types</option>
-            {availableTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
+  <select
+    value={typeFilter}
+    onChange={(e) => setTypeFilter(e.target.value)}
+    className="w-full sm:w-auto px-4 py-2 border rounded-lg shadow-sm text-black focus:outline-none focus:ring focus:border-blue-300"
+  >
+    <option value="All">All Types</option>
+    {availableTypes.map((type) => (
+      <option key={type} value={type}>
+        {type}
+      </option>
+    ))}
+  </select>
+</div>
+
 
         {loading ? (
           <div>Loading...</div>
@@ -351,5 +355,6 @@ const [deleteId, setDeleteId] = useState<number | null>(null);
         </div>
       )}
     </main>
+    </>
   );
 }

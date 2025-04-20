@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
+import Navbar from "../components/Navbar"; // Adjusted path to locate Navbar component
 export default function AddLearningPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -82,6 +83,8 @@ export default function AddLearningPage() {
   };
 
   return (
+    <>
+      <Navbar /> {/* ✅ Add the navbar here */}
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-xl p-6">
         <h1 className="text-2xl font-semibold mb-6 text-gray-800">📚 Add a New Learning</h1>
@@ -191,5 +194,6 @@ export default function AddLearningPage() {
         </form>
       </div>
     </main>
+    </>
   );
 }
